@@ -1,0 +1,16 @@
+$ipAddress = "ipExample"
+$domainName = "DomainExample"
+$hostsFilePath = "$env:SystemRoot\System32\drivers\etc\hosts"
+if (Test-Path $hostsFilePath) {
+    $entry = "$ipAddress    $domainName"
+    if (Select-String -Path $hostsFilePath -Pattern $domainName -Quiet) {
+        Write-Host "The domain $domainName is already present in the hosts file."
+    }
+    else {
+        Add-Content -Path $hostsFilePath -Value $entry
+        Write-Host "The domain $domainName with IP address $ipAddress has been added to the hosts file."
+    }
+}
+else {
+    Write-Host "Hosts file not found."
+}
