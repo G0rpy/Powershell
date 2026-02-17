@@ -1,0 +1,13 @@
+$groupName = "YourGroupName"
+$userList = @("User1", "User2", "User3")
+$logFile = "C:\Path\To\Remove_Log.txt" 
+foreach ($user in $userList) {
+    try {        
+        Remove-ADGroupMember -Identity $groupName -Members $user -Confirm:$false
+        Write-Host "User $user removed from group $groupName" -ForegroundColor Green
+    } catch {
+        $errorMessage = "Error removing user $user from group $groupName: $($_.Exception.Message)"
+        Write-Host $errorMessage -ForegroundColor Red
+        $errorMessage | Out-File -FilePath $logFile -Append
+    }
+}
