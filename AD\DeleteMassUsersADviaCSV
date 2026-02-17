@@ -1,0 +1,20 @@
+Import-Module ActiveDirectory
+
+
+$userListPath = "C:\example\UsersToDelete.txt"
+# Check if the file exists before continuing
+if (-Not (Test-Path $userListPath)) {
+    Write-Error "User list file not found at path: $userListPath"
+    return
+}
+$usernames = Get-Content $userListPath
+foreach ($username in $usernames) {
+    try {
+        $user = Get-ADUser -Identity $username -ErrorAction Stop
+        Remove-ADUser -Identity $user -Confirm:$false
+        Write-Host "Deleted user: $username"
+    }
+    catch {
+        Write-Warning "Failed to delete ${username}: $($_.Exception.Message)"
+    }
+}
