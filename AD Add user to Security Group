@@ -1,0 +1,10 @@
+$groupName = "YourGroupName"
+$userList = @("User1", "User2", "User3")
+foreach ($user in $userList) {
+    try {
+        Add-ADGroupMember -Identity $groupName -Members $user
+        Write-Host "User $user added to group $groupName" -ForegroundColor Green
+    } catch {
+        Write-Host "Error adding user $user to group $groupName" -ForegroundColor Red
+        Write-Host $_.Exception.Message
+    }
