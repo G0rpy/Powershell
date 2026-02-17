@@ -1,0 +1,43 @@
+# Path where the printer script will be saved
+$scriptPath = "C:\Scripts\AddPrinters.ps1"
+
+# Ensure the directory exists
+$scriptDir = Split-Path $scriptPath
+if (-not (Test-Path $scriptDir)) {
+    New-Item -ItemType Directory -Path $scriptDir -Force
+}
+
+# Save the printer script to a file
+$printerScript = @'
+Start-Sleep -Seconds 5
+
+# List of printers to add
+$printerList = @("\\server\printer1", "\\server\printer2", "\\server\printer3")
+
+foreach ($printerPath in $printerList) {
+    $printerName = Split-Path $printerPath -Leaf
+
+    # Check if the printer already exists
+    if (-not (Get-Printer -Name $printerName -ErrorAction SilentlyContinue)) {
+        try {
+            Add-Printer -ConnectionName $printerPath
+        }
+        catch {
+            # Suppress any errors silently
+        }
+    }
+}
+'@
+
+$printerScript | Set-Content -Path $scriptPath -Force
+
+# Define the scheduled task
+$action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
+$trigger = New-ScheduledTaskTrigger -AtLogon
+$principal = New-ScheduledTaskPrincipal -UserId "BUILTIN\Users" -LogonType Interactive -RunLevel LeastPrivilege
+$taskName = "AddNetworkPrinters"
+
+# Create the scheduled task
+Register-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -TaskName $taskName -Description "Adds network printers at user logon" -Force
+
+Write-Output "Scheduled task '$taskName' has been created to run at user logon."
