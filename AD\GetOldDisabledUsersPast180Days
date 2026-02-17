@@ -1,0 +1,16 @@
+Import-Module ActiveDirectory
+
+
+$daysThreshold = 180
+$cutoffDate = (Get-Date).AddDays(-$daysThreshold)
+$exportPath = "C:\Test\Disabled_Users_180DaysPlus.csv"
+$exportDir = [System.IO.Path]::GetDirectoryName($exportPath)
+if (!(Test-Path -Path $exportDir)) {
+    New-Item -ItemType Directory -Path $exportDir -Force | Out-Null
+}
+$disabledOldUsers = Get-ADUser -Filter 'Enabled -eq $false' -Properties LastLogonDate | Where-Object {
+    (!$_.LastLogonDate -or $_.LastLogonDate -lt $cutoffDate)
+}
+$results = $disabledOldUsers | Select-Object Name, SamAccountName, LastLogonDate | Sort-Object LastLogonDate
+$results | Export-Csv -Path $exportPath -NoTypeInformation
+Write-Host "Export complete: $exportPath"
