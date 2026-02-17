@@ -1,0 +1,11 @@
+$user = "Domain\username"
+$path = "C:\insert\path\here"
+$csv = "C:\temp\Permissions_output.csv"
+$list = Get-ChildItem $path -Directory -Recurse | ForEach-Object {
+$folderPath = $_.FullName
+Write-Host "Scanning folder: $folderPath"
+$acl = Get-Acl $folderPath
+$acl.Access | Where-Object { $_.IdentityReference -eq $user } |
+Select-Object @{Name="FolderPath"; Expression={$folderPath}}, FileSystemRights, AccessControlType, IdentityReference
+}
+$list | Export-Csv -Path $csv -NoTypeInformation
