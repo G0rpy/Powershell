@@ -1,0 +1,86 @@
+Template for Excel CSV
+
+firstname	middleInitial	lastname	username	email	proxy1	proxy2	proxy3	streetaddress	city	zipcode	state	country	description	office	department	password	telephone	jobtitle	company	ou
+
+
+# Import the AD module
+Import-Module activedirectory
+
+$importfile = "C:\Temp\example.csv"
+$domain = "company.com/local"
+  
+# Store the data from Example.csv in the $ADUsers variable
+$ADUsers = Import-csv $importfile
+
+# Loop through each row in the CSV Sheet 
+foreach ($User in $ADUsers)
+{
+
+	# Read data from each field in the row and assign data to a variable
+	$Username  	= $User.username
+	$Password 	= $User.password
+	$Firstname 	= $User.firstname
+	$Lastname 	= $User.lastname
+	$OU 		= $User.ou
+	$email      = $User.email
+	$proxy1	= $User.proxy1
+	$proxy2	= $User.proxy2
+	$proxy3	= $User.proxy3
+	$streetaddress = $User.streetaddress
+	$city       = $User.city
+	$zipcode    = $User.zipcode
+	$state      = $User.state
+	$country    = $User.country
+	$description = $User.description
+	$office     = $User.office
+	$telephone  = $User.telephone
+	$jobtitle   = $User.jobtitle
+	$company    = $User.company
+	$department = $User.department
+	$Password   = $User.Password
+  
+	# Check if user already exists
+	if (Get-ADUser -F {SamAccountName -eq $Username})
+	{
+		 # If user exists, give warning
+		 Write-Warning "User account $Username already exists."
+	}
+	else
+	{
+		# User does not exist so proceed with creation of new user account
+		
+		New-ADUser `
+            -SamAccountName $Username `
+            -UserPrincipalName "$Username@$domain" `
+            -Name "$Firstname $Lastname" `
+            -GivenName $Firstname `
+            -Surname $Lastname `
+            -Enabled $True `
+            -DisplayName "$Lastname, $Firstname" `
+            -Path $OU `
+            -City $city `
+            -Company $company `
+            -State $state `
+            -StreetAddress $streetaddress `
+            -OfficePhone $telephone `
+            -EmailAddress $email `
+            -Title $jobtitle `
+            -Department $department `
+            -AccountPassword (convertto-securestring $Password -AsPlainText -Force) -ChangePasswordAtLogon $False
+
+	}
+  $proxyaddresses = @()
+  if (-not [STRING]::IsNullOrWhiteSpace($email)) {
+    $proxyaddresses += "smtp:$($email)"
+  }
+  if (-not [STRING]::IsNullOrWhiteSpace($proxy1)) {
+    $proxyaddresses += "smtp:$($proxy1)"
+  }
+  if (-not [STRING]::IsNullOrWhiteSpace($proxy2)) {
+    $proxyaddresses += "smtp:$($proxy2)"
+  }
+  if (-not [STRING]::IsNullOrWhiteSpace($proxy3)) {
+    $proxyaddresses += "smtp:$($proxy3)"
+  }
+  #$proxyaddresses
+	Set-AdUser -Identity $username -Add @{proxyAddresses = $proxyaddresses}
