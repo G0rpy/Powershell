@@ -1,0 +1,5 @@
+# Set the OpenVPN config folder path
+$newConfigDirectory = "C:\Program Files\OpenVPN\config-auto"
+# Create a new environment variable that OpenVPN will use to look for config files
+[System.Environment]::SetEnvironmentVariable("OPENVPN_CONFIG", $newConfigDirectory, [System.EnvironmentVariableTarget]::Machine)
+Write-Host "OpenVPN configuration folder set to: $newConfigDirectory"
