@@ -1,0 +1,16 @@
+# Get all disabled users in the domain
+$disabledUsers = Get-ADUser -Filter 'Enabled -eq $false' -Properties MemberOf
+foreach ($user in $disabledUsers) {
+    $groups = $user.MemberOf
+    if ($groups) {
+        foreach ($groupDN in $groups) {
+            try {
+                Remove-ADGroupMember -Identity $groupDN -Members $user -Confirm:$false -ErrorAction Stop
+                Write-Host "Removed disabled user $($user.SamAccountName) from group $groupDN"
+            } catch {
+                $errorMsg = $_.Exception.Message
+                Write-Warning "Failed to remove $($user.SamAccountName) from $groupDN - Error: $errorMsg"
+            }
+        }
+    }
+}
